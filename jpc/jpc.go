@@ -11,11 +11,9 @@ package jpc
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"reflect"
 	"runtime"
-	"strings"
 
 	"github.com/joyent/gosign/auth"
 )
@@ -93,25 +91,4 @@ func CompleteCredentialsFromEnv(keyName string) (cred *auth.Credentials, err err
 		}
 	}
 	return cred, nil
-}
-
-func Region(cred *auth.Credentials) string {
-	sdcUrl := cred.SdcEndpoint.URL
-
-	if isLocalhost(sdcUrl) {
-		return "some-region"
-	}
-	return sdcUrl[strings.LastIndex(sdcUrl, "/")+1 : strings.Index(sdcUrl, ".")]
-}
-
-func isLocalhost(u string) bool {
-	parsedUrl, err := url.Parse(u)
-	if err != nil {
-		return false
-	}
-	if strings.HasPrefix(parsedUrl.Host, "localhost") || strings.HasPrefix(parsedUrl.Host, "127.0.0.1") {
-		return true
-	}
-
-	return false
 }

@@ -125,7 +125,7 @@ func getDateForRegion(credentials *auth.Credentials, isManta bool) string {
 		location, _ := time.LoadLocation(jpc.Locations["us-east-1"])
 		return time.Now().In(location).Format(time.RFC1123)
 	} else {
-		location, _ := time.LoadLocation(jpc.Locations[jpc.Region(credentials)])
+		location, _ := time.LoadLocation(jpc.Locations[credentials.Region()])
 		return time.Now().In(location).Format(time.RFC1123)
 	}
 }
