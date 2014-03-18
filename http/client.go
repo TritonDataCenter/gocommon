@@ -170,11 +170,11 @@ func (c *Client) JsonRequest(method, url, rfc1123Date string, request *RequestDa
 	if len(respData) > 0 {
 		if response.RespValue != nil {
 			if _, ok := response.RespValue.(*[]byte); ok {
-				//response.RespValue = respData
-				err = decodeJSON(bytes.NewReader(respData), false, response.RespValue)
-				if err != nil {
-					err = errors.Newf(err, "failed unmarshaling/decoding the response body: %s", respData)
-				}
+				response.RespValue = respData
+				//err = decodeJSON(bytes.NewReader(respData), false, response.RespValue)
+				//if err != nil {
+				//	err = errors.Newf(err, "failed unmarshaling/decoding the response body: %s", respData)
+				//}
 			} else {
 				err = json.Unmarshal(respData, response.RespValue)
 				if err != nil {
