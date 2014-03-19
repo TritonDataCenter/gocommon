@@ -151,7 +151,7 @@ func (c *Client) JsonRequest(method, url, rfc1123Date string, request *RequestDa
 		}
 	}
 	headers, err := createHeaders(request.ReqHeaders, c.credentials, contentTypeJSON, rfc1123Date, c.apiVersion,
-		isMantaRequest(url))
+		isMantaRequest(url, c.credentials.UserAuthentication.User))
 	if err != nil {
 		return err
 	}
@@ -236,7 +236,7 @@ func (c *Client) BinaryRequest(method, url, rfc1123Date string, request *Request
 		url += "?" + request.Params.Encode()
 	}
 	headers, err := createHeaders(request.ReqHeaders, c.credentials, contentTypeOctetStream, rfc1123Date,
-		c.apiVersion, isMantaRequest(url))
+		c.apiVersion, isMantaRequest(url, c.credentials.UserAuthentication.User))
 	if err != nil {
 		return err
 	}
@@ -273,6 +273,14 @@ func (c *Client) sendRequest(method, URL string, reqReader io.Reader, length int
 	if err != nil {
 		return
 	}
+
+	fmt.Printf("Request: %s %s\n", method, URL)
+	fmt.Printf("Request header: %s\n", headers)
+	fmt.Printf("Request body: %s\n", reqData)
+	fmt.Printf("Response: %s\n", rawResp.Status)
+	fmt.Printf("Response header: %s\n", rawResp.Header)
+	fmt.Printf("Response body: %s\n", rawResp.Body)
+	fmt.Printf("Response error: %s\n", err)
 
 	if logger != nil && logger.IsTraceEnabled() {
 		logger.Tracef("Request: %s %s\n", method, URL)
@@ -415,6 +423,6 @@ func handleError(URL string, resp *http.Response) error {
 	return errors.NewUnknownErrorf(httpError, "", "Unknown error %s", URL)
 }
 
-func isMantaRequest(url string) bool {
-	return strings.Contains(url, "/stor/") || strings.Contains(url, "/jobs")
+func isMantaRequest(url, user string) bool {
+	return strings.Contains(url, "/"+user+"/stor") || strings.Contains(url, "/"+user+"/jobs")
 }
