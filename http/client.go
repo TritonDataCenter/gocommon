@@ -274,14 +274,6 @@ func (c *Client) sendRequest(method, URL string, reqReader io.Reader, length int
 		return
 	}
 
-	fmt.Printf("Request: %s %s\n", method, URL)
-	fmt.Printf("Request header: %s\n", headers)
-	fmt.Printf("Request body: %s\n", reqData)
-	fmt.Printf("Response: %s\n", rawResp.Status)
-	fmt.Printf("Response header: %s\n", rawResp.Header)
-	fmt.Printf("Response body: %s\n", rawResp.Body)
-	fmt.Printf("Response error: %s\n", err)
-
 	if logger != nil && logger.IsTraceEnabled() {
 		logger.Tracef("Request: %s %s\n", method, URL)
 		logger.Tracef("Request header: %s\n", headers)
