@@ -416,5 +416,5 @@ func handleError(URL string, resp *http.Response) error {
 }
 
 func isMantaRequest(url, user string) bool {
-	return strings.Contains(url, "/"+user+"/stor") || strings.Contains(url, "/"+user+"/jobs")
+	return strings.Contains(url, "/"+user+"/stor") || strings.Contains(url, "/"+user+"/jobs") || strings.Contains(url, "/"+user+"/public")
 }
