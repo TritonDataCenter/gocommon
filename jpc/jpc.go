@@ -11,6 +11,7 @@ package jpc
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"runtime"
@@ -58,16 +59,20 @@ func getUserHome() string {
 	}
 }
 
-// CredentialsFromEnv creates and initializes the credentials from the
+// credentialsFromEnv creates and initializes the credentials from the
 // environment variables.
-func CredentialsFromEnv(key string) *auth.Credentials {
+func credentialsFromEnv(key string) (*auth.Credentials, error) {
 	var keyName string
 	if key == "" {
 		keyName = getUserHome() + "/.ssh/id_rsa"
 	} else {
 		keyName = key
 	}
-	authentication := auth.Auth{User: getConfig(SdcAccount, MantaUser), KeyFile: keyName, Algorithm: "rsa-sha256"}
+	privateKey, err := ioutil.ReadFile(keyName)
+	if err != nil {
+		return nil, err
+	}
+	authentication := auth.Auth{User: getConfig(SdcAccount, MantaUser), PrivateKey: string(privateKey), Algorithm: "rsa-sha256"}
 
 	return &auth.Credentials{
 		UserAuthentication: authentication,
@@ -75,13 +80,16 @@ func CredentialsFromEnv(key string) *auth.Credentials {
 		SdcEndpoint:        auth.Endpoint{URL: getConfig(SdcUrl)},
 		MantaKeyId:         getConfig(MantaKeyId),
 		MantaEndpoint:      auth.Endpoint{URL: getConfig(MantaUrl)},
-	}
+	}, nil
 }
 
 // CompleteCredentialsFromEnv gets and verifies all the required
 // authentication parameters have values in the environment.
 func CompleteCredentialsFromEnv(keyName string) (cred *auth.Credentials, err error) {
-	cred = CredentialsFromEnv(keyName)
+	cred, err = credentialsFromEnv(keyName)
+	if err != nil {
+		return nil, err
+	}
 	v := reflect.ValueOf(cred).Elem()
 	t := v.Type()
 	for i := 0; i < v.NumField(); i++ {
