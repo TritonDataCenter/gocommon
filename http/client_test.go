@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	gc "launchpad.net/gocheck"
 	"net/http"
-	"os"
 	"testing"
 
 	httpsuite "github.com/joyent/gocommon/testing"
@@ -15,7 +14,6 @@ import (
 
 const (
 	Signature = "yK0J17CQ04ZvMsFLoH163Sjyg8tE4BoIeCsmKWLQKN3BYgSpR0XyqrecheQ2A0o4L99oSumYSKIscBSiH5rqdf4/1zC/FEkYOI2UzcIHYb1MPNzO3g/5X44TppYE+8dxoH99V+Ts8RT3ZurEYjQ8wmK0TnxdirAevSpbypZJaBOFXUZSxx80m5BD4QE/MSGo/eaVdJI/Iw+nardHNvimVCr6pRNycX1I4FdyRR6kgrAl2NkY2yxx/CAY21Ir+dmbG3A1x4GiIE485LLheAL5/toPo7Gh8G5fkrF9dXWVyX0k9AZXqXNWn5AZxc32dKL2enH09j/X86RtwiR1IEuPww=="
-	keyPath   = "/.ssh/gotest_key_id_rsa"
 	key       = `-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAyLOtVh8qXjdwfjZZYwkEgg1yoSzmpKKpmzYW745lBGtPH87F
 spHVHeqjmgFnBsARsD7CHzYyQTho7oLrAEbuF7tKdGRK25wJIenPKKuL+UVwZNeJ
@@ -54,28 +52,6 @@ type LoopingHTTPSuite struct {
 	creds *auth.Credentials
 }
 
-func (s *LoopingHTTPSuite) SetUpSuite(c *gc.C) {
-	s.HTTPSuite.SetUpSuite(c)
-	if err := ioutil.WriteFile(os.Getenv("HOME")+keyPath, []byte(key), 0600); err != nil {
-		fmt.Errorf("Error while creating temp key file %j", err)
-	}
-}
-
-func (s *LoopingHTTPSuite) TearDownSuite(c *gc.C) {
-	if err := os.Remove(os.Getenv("HOME") + keyPath); err != nil {
-		fmt.Errorf("Error while removing temp key file %j", err)
-	}
-	s.HTTPSuite.TearDownSuite(c)
-}
-
-func (s *LoopingHTTPSuite) SetUpTest(c *gc.C) {
-	s.HTTPSuite.SetUpTest(c)
-}
-
-func (s *LoopingHTTPSuite) TearDownTest(c *gc.C) {
-	s.HTTPSuite.TearDownTest(c)
-}
-
 func (s *LoopingHTTPSuite) setupLoopbackRequest() (*http.Header, chan string, *Client) {
 	var headers http.Header
 	bodyChan := make(chan string, 1)
@@ -103,12 +79,12 @@ type HTTPSClientTestSuite struct {
 }
 
 var _ = gc.Suite(&HTTPClientTestSuite{LoopingHTTPSuite{httpsuite.HTTPSuite{}, &auth.Credentials{
-	UserAuthentication: auth.Auth{User: "test_user", KeyFile: os.Getenv("HOME") + keyPath, Algorithm: "rsa-sha256"},
+	UserAuthentication: auth.Auth{User: "test_user", PrivateKey: key, Algorithm: "rsa-sha256"},
 	SdcKeyId:           "test_key",
 	SdcEndpoint:        auth.Endpoint{URL: "http://gotest.api.joyentcloud.com"},
 }}})
 var _ = gc.Suite(&HTTPSClientTestSuite{LoopingHTTPSuite{httpsuite.HTTPSuite{UseTLS: true}, &auth.Credentials{
-	UserAuthentication: auth.Auth{User: "test_user", KeyFile: os.Getenv("HOME") + keyPath, Algorithm: "rsa-sha256"},
+	UserAuthentication: auth.Auth{User: "test_user", PrivateKey: key, Algorithm: "rsa-sha256"},
 	SdcKeyId:           "test_key",
 	SdcEndpoint:        auth.Endpoint{URL: "http://gotest.api.joyentcloud.com"},
 }}})
