@@ -52,6 +52,17 @@ type LoopingHTTPSuite struct {
 	creds *auth.Credentials
 }
 
+func (s *LoopingHTTPSuite) SetUpSuite(c *gc.C) {
+	s.HTTPSuite.SetUpSuite(c)
+	authCreds, err := auth.NewAuth("test_user", key, "rsa-sha256")
+	c.Assert(err, gc.IsNil)
+	s.creds = &auth.Credentials{
+		UserAuthentication: authCreds,
+		SdcKeyId:           "test_key",
+		SdcEndpoint:        auth.Endpoint{URL: "http://gotest.api.joyentcloud.com"},
+	}
+}
+
 func (s *LoopingHTTPSuite) setupLoopbackRequest() (*http.Header, chan string, *Client) {
 	var headers http.Header
 	bodyChan := make(chan string, 1)
@@ -78,16 +89,8 @@ type HTTPSClientTestSuite struct {
 	LoopingHTTPSuite
 }
 
-var _ = gc.Suite(&HTTPClientTestSuite{LoopingHTTPSuite{httpsuite.HTTPSuite{}, &auth.Credentials{
-	UserAuthentication: auth.Auth{User: "test_user", PrivateKey: key, Algorithm: "rsa-sha256"},
-	SdcKeyId:           "test_key",
-	SdcEndpoint:        auth.Endpoint{URL: "http://gotest.api.joyentcloud.com"},
-}}})
-var _ = gc.Suite(&HTTPSClientTestSuite{LoopingHTTPSuite{httpsuite.HTTPSuite{UseTLS: true}, &auth.Credentials{
-	UserAuthentication: auth.Auth{User: "test_user", PrivateKey: key, Algorithm: "rsa-sha256"},
-	SdcKeyId:           "test_key",
-	SdcEndpoint:        auth.Endpoint{URL: "http://gotest.api.joyentcloud.com"},
-}}})
+var _ = gc.Suite(&HTTPClientTestSuite{})
+var _ = gc.Suite(&HTTPSClientTestSuite{})
 
 func (s *HTTPClientTestSuite) assertHeaderValues(c *gc.C, apiVersion string) {
 	emptyHeaders := http.Header{}
