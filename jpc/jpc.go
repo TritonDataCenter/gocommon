@@ -72,7 +72,10 @@ func credentialsFromEnv(key string) (*auth.Credentials, error) {
 	if err != nil {
 		return nil, err
 	}
-	authentication := auth.Auth{User: getConfig(SdcAccount, MantaUser), PrivateKey: string(privateKey), Algorithm: "rsa-sha256"}
+	authentication, err := auth.NewAuth(getConfig(SdcAccount, MantaUser), string(privateKey), "rsa-sha256")
+	if err != nil {
+		return nil, err
+	}
 
 	return &auth.Credentials{
 		UserAuthentication: authentication,

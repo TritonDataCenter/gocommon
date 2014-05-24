@@ -102,7 +102,7 @@ func (c *client) SignURL(path string, expires time.Time) (string, error) {
 	params := fmt.Sprintf("algorithm=%s&expires=%d&keyId=%s", userAuthentication.Algorithm, expires.Unix(), keyId)
 	signingLine := fmt.Sprintf("GET\n%s\n%s\n%s", parsedURL.Host, path, params)
 
-	signature, err := auth.GetSignature(&userAuthentication, signingLine)
+	signature, err := auth.GetSignature(userAuthentication, signingLine)
 	if err != nil {
 		return "", fmt.Errorf("cannot generate URL signature: %v", err)
 	}
