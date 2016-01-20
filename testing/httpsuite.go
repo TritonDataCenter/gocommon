@@ -6,6 +6,7 @@ package testing
 // server is shut down at the end of the test suite.
 
 import (
+	"github.com/julienschmidt/httprouter"
 	gc "launchpad.net/gocheck"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,7 @@ var _ = gc.Suite(&HTTPSuite{})
 
 type HTTPSuite struct {
 	Server     *httptest.Server
-	Mux        *http.ServeMux
+	Mux        *httprouter.Router
 	oldHandler http.Handler
 	UseTLS     bool
 }
@@ -30,7 +31,7 @@ func (s *HTTPSuite) SetUpSuite(c *gc.C) {
 
 func (s *HTTPSuite) SetUpTest(c *gc.C) {
 	s.oldHandler = s.Server.Config.Handler
-	s.Mux = http.NewServeMux()
+	s.Mux = httprouter.New()
 	s.Server.Config.Handler = s.Mux
 }
 
