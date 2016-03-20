@@ -15,14 +15,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/juju/loggo"
 
 	"github.com/joyent/gocommon"
 	"github.com/joyent/gocommon/errors"
@@ -40,7 +39,8 @@ type Client struct {
 	maxSendAttempts int
 	credentials     *auth.Credentials
 	apiVersion      string
-	logger          *loggo.Logger
+	logger          *log.Logger
+	trace           bool
 }
 
 type ErrorResponse struct {
@@ -78,8 +78,15 @@ const (
 )
 
 // New returns a new http *Client using the default net/http client.
-func New(credentials *auth.Credentials, apiVersion string, logger *loggo.Logger) *Client {
-	return &Client{*http.DefaultClient, MaxSendAttempts, credentials, apiVersion, logger}
+func New(credentials *auth.Credentials, apiVersion string, logger *log.Logger) *Client {
+	return &Client{*http.DefaultClient, MaxSendAttempts, credentials, apiVersion, logger, false}
+}
+
+// SetTrace allows control over whether requests will write their
+// contents to the logger supplied during construction. Note that this
+// is not safe to call from multiple go-routines.
+func (client *Client) SetTrace(traceEnabled bool) {
+	client.trace = traceEnabled
 }
 
 func gojoyentAgent() string {
@@ -260,7 +267,7 @@ func (c *Client) BinaryRequest(method, url, rfc1123Date string, request *Request
 // headers: HTTP headers to include with the request.
 // expectedStatus: a slice of allowed response status codes.
 func (c *Client) sendRequest(method, URL string, reqReader io.Reader, length int, headers http.Header,
-	expectedStatus []int, logger *loggo.Logger) (rc io.ReadCloser, respHeader *http.Header, err error) {
+	expectedStatus []int, logger *log.Logger) (rc io.ReadCloser, respHeader *http.Header, err error) {
 	reqData := make([]byte, length)
 	if reqReader != nil {
 		nrRead, err := io.ReadFull(reqReader, reqData)
@@ -274,14 +281,14 @@ func (c *Client) sendRequest(method, URL string, reqReader io.Reader, length int
 		return
 	}
 
-	if logger != nil && logger.IsTraceEnabled() {
-		logger.Tracef("Request: %s %s\n", method, URL)
-		logger.Tracef("Request header: %s\n", headers)
-		logger.Tracef("Request body: %s\n", reqData)
-		logger.Tracef("Response: %s\n", rawResp.Status)
-		logger.Tracef("Response header: %s\n", rawResp.Header)
-		logger.Tracef("Response body: %s\n", rawResp.Body)
-		logger.Tracef("Response error: %s\n", err)
+	if logger != nil && c.trace {
+		logger.Printf("Request: %s %s\n", method, URL)
+		logger.Printf("Request header: %s\n", headers)
+		logger.Printf("Request body: %s\n", reqData)
+		logger.Printf("Response: %s\n", rawResp.Status)
+		logger.Printf("Response header: %s\n", rawResp.Header)
+		logger.Printf("Response body: %s\n", rawResp.Body)
+		logger.Printf("Response error: %s\n", err)
 	}
 
 	foundStatus := false
@@ -303,7 +310,7 @@ func (c *Client) sendRequest(method, URL string, reqReader io.Reader, length int
 }
 
 func (c *Client) sendRateLimitedRequest(method, URL string, headers http.Header, reqData []byte,
-	logger *loggo.Logger) (resp *http.Response, err error) {
+	logger *log.Logger) (resp *http.Response, err error) {
 	for i := 0; i < c.maxSendAttempts; i++ {
 		var reqReader io.Reader
 		if reqData != nil {
@@ -339,7 +346,7 @@ func (c *Client) sendRateLimitedRequest(method, URL string, headers http.Header,
 			return nil, errors.Newf(err, "Resource limit exeeded at URL %s", URL)
 		}
 		if logger != nil {
-			logger.Warningf("Too many requests, retrying in %dms.", int(retryAfter*1000))
+			logger.Println("Too many requests, retrying in %dms.", int(retryAfter*1000))
 		}
 		time.Sleep(time.Duration(retryAfter) * time.Second)
 	}

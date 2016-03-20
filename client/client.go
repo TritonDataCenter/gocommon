@@ -11,12 +11,11 @@ package client
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/juju/loggo"
 
 	joyenthttp "github.com/joyent/gocommon/http"
 	"github.com/joyent/gosign/auth"
@@ -44,7 +43,7 @@ type Client interface {
 // This client sends requests without authenticating.
 type client struct {
 	mu         sync.Mutex
-	logger     *loggo.Logger
+	logger     *log.Logger
 	baseURL    string
 	creds      *auth.Credentials
 	httpClient *joyenthttp.Client
@@ -52,12 +51,12 @@ type client struct {
 
 var _ Client = (*client)(nil)
 
-func newClient(baseURL string, credentials *auth.Credentials, httpClient *joyenthttp.Client, logger *loggo.Logger) Client {
+func newClient(baseURL string, credentials *auth.Credentials, httpClient *joyenthttp.Client, logger *log.Logger) Client {
 	client := client{baseURL: baseURL, logger: logger, creds: credentials, httpClient: httpClient}
 	return &client
 }
 
-func NewClient(baseURL, apiVersion string, credentials *auth.Credentials, logger *loggo.Logger) Client {
+func NewClient(baseURL, apiVersion string, credentials *auth.Credentials, logger *log.Logger) Client {
 	sharedHttpClient := joyenthttp.New(credentials, apiVersion, logger)
 	return newClient(baseURL, credentials, sharedHttpClient, logger)
 }
