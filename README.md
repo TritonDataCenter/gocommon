@@ -3,6 +3,8 @@ gocommon
 
 Common Go library for Joyent's Triton and Manta.
 
+[![wercker status](https://app.wercker.com/status/2f63bf7f68bfdd46b979abad19c0bee0/s/master "wercker status")](https://app.wercker.com/project/byKey/2f63bf7f68bfdd46b979abad19c0bee0)
+
 ## Installation
 
 Use `go-get` to install gocommon.
@@ -70,7 +72,20 @@ upstream        git@github.com:joyent/gocommon.git (push)
 
 ### Run Tests
 
+The library needs values for the `SDC_URL`, `MANTA_URL`, `MANTA_KEY_ID` and `SDC_KEY_ID` environment variables even though the tests are run locally. You can generate a temporary key and use its fingerprint for tests without adding the key to your Triton Cloud account.
+
 ```
+# create a temporary key
+ssh-keygen -b 2048 -C "Testing Key" -f /tmp/id_rsa -t rsa -P ""
+
+# set up environment
+# note: leave the -E md5 argument off on older ssh-keygen
+export KEY_ID=$(ssh-keygen -E md5 -lf /tmp/id_rsa | awk -F' ' '{print $2}' | cut -d':' -f2-)
+export SDC_KEY_ID=${KEY_ID}
+export MANTA_KEY_ID=${KEY_ID}
+export SDC_URL=https://us-east-1.api.joyent.com
+export MANTA_URL=https://us-east.manta.joyent.com
+
 cd ${GOPATH}/src/github.com/joyent/gocommon
 go test ./...
 ```
