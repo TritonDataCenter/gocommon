@@ -11,7 +11,7 @@ package errors_test
 
 import (
 	"github.com/joyent/gocommon/errors"
-	gc "launchpad.net/gocheck"
+	gc "gopkg.in/check.v1"
 	"testing"
 )
 

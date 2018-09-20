@@ -346,7 +346,7 @@ func (c *Client) sendRateLimitedRequest(method, URL string, headers http.Header,
 			return nil, errors.Newf(err, "Resource limit exeeded at URL %s", URL)
 		}
 		if logger != nil {
-			logger.Println("Too many requests, retrying in %dms.", int(retryAfter*1000))
+			logger.Printf("Too many requests, retrying in %dms.", int(retryAfter*1000))
 		}
 		time.Sleep(time.Duration(retryAfter) * time.Second)
 	}

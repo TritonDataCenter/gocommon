@@ -7,7 +7,7 @@ package testing
 
 import (
 	"github.com/julienschmidt/httprouter"
-	gc "launchpad.net/gocheck"
+	gc "gopkg.in/check.v1"
 	"net/http"
 	"net/http/httptest"
 )

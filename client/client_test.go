@@ -16,7 +16,7 @@ import (
 	joyenthttp "github.com/joyent/gocommon/http"
 	"github.com/joyent/gocommon/jpc"
 	"github.com/joyent/gosign/auth"
-	gc "launchpad.net/gocheck"
+	gc "gopkg.in/check.v1"
 	"net/http"
 	"testing"
 	"time"
