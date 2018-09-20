@@ -12,11 +12,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-
 package gocommon
 
 import (
-	gc "launchpad.net/gocheck"
+	gc "gopkg.in/check.v1"
 	"testing"
 )
 
